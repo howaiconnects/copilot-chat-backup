@@ -1,0 +1,55 @@
+{
+  "_comment": "Copilot Chat Backup Configuration",
+  "_description": "Customize backup behavior. All paths support ~ for home directory.",
+  
+  "backup": {
+    "path": "~/copilot-chat-backups",
+    "retention_days": 90,
+    "compress_after_days": 30
+  },
+  
+  "schedules": {
+    "hourly": {
+      "enabled": true,
+      "incremental": true,
+      "hours": [9, 11, 13, 15, 17, 19, 21, 23]
+    },
+    "daily": {
+      "enabled": true,
+      "time": "23:30"
+    },
+    "weekly": {
+      "enabled": true,
+      "day": "sunday",
+      "time": "02:00"
+    }
+  },
+  
+  "export": {
+    "formats": ["markdown", "json", "jsonl"],
+    "qa_extraction": true,
+    "include_timestamps": true,
+    "max_message_length": 50000
+  },
+  
+  "filters": {
+    "exclude_patterns": [],
+    "min_messages": 2
+  },
+  
+  "projects": {
+    "_comment": "Add your tracked projects here. Leave empty to auto-discover all.",
+    "tracked": []
+  },
+  
+  "integrations": {
+    "airtable": {
+      "enabled": false,
+      "sync_on_backup": false
+    },
+    "github": {
+      "enabled": false,
+      "branch": "copilot-backup-data"
+    }
+  }
+}

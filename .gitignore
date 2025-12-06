@@ -1,0 +1,42 @@
+# Copilot Chat Backup - .gitignore
+
+# Configuration with secrets
+airtable_config.json
+.env
+.env.local
+
+# Backup data (stored in ~/copilot-chat-backups, not in repo)
+*.db
+*.sqlite
+backups/
+raw/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.so
+.eggs/
+*.egg-info/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs (local only)
+*.log
+logs/

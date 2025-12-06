@@ -1,0 +1,41 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/*.pyc": true
+    },
+    "python.defaultInterpreterPath": "/usr/bin/python3",
+    "editor.formatOnSave": true
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-python.python",
+      "ms-python.vscode-pylance"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Run Backup",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/backup-all-chats.py",
+        "console": "integratedTerminal"
+      },
+      {
+        "name": "Search Chats",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/search-chats.py",
+        "args": ["--stats"],
+        "console": "integratedTerminal"
+      }
+    ]
+  }
+}
