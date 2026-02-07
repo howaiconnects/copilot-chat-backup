@@ -1,0 +1,64 @@
+groups:
+  - name: copilot_backup_alerts
+    rules:
+      # Alert if backup hasn't run in 24 hours
+      - alert: BackupStale
+        expr: (time() - copilot_backup_last_run_timestamp) > 86400
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Copilot chat backup is stale"
+          description: "No backup has been performed in the last 24 hours"
+
+      # Alert if backup size grows too large
+      - alert: BackupSizeLarge
+        expr: copilot_backup_total_size_bytes > 5368709120  # 5GB
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Copilot backup size exceeds 5GB"
+          description: "Backup size is {{ $value | humanize1024 }}"
+
+      # Alert on high error rate in search API
+      - alert: SearchAPIHighErrorRate
+        expr: rate(copilot_search_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate in Search API"
+          description: "Error rate is {{ $value }} per second"
+
+      # Alert if Qdrant is down
+      - alert: QdrantDown
+        expr: up{job="qdrant"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Qdrant vector database is down"
+          description: "Qdrant has been unreachable for more than 2 minutes"
+
+  - name: session_metrics_alerts
+    rules:
+      # Alert on unusual session growth
+      - alert: UnusualSessionGrowth
+        expr: rate(copilot_sessions_total[1h]) > 10
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "Unusual session growth detected"
+          description: "Sessions growing at {{ $value }} per hour"
+
+      # Alert on low message count per session
+      - alert: LowMessageCount
+        expr: copilot_messages_total / copilot_sessions_total < 2
+        for: 1h
+        labels:
+          severity: info
+        annotations:
+          summary: "Low average message count per session"
+          description: "Average of {{ $value }} messages per session"

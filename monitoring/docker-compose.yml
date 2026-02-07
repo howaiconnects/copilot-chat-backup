@@ -1,0 +1,162 @@
+version: '3.8'
+
+services:
+  # =============================================================================
+  # Metrics & Monitoring Stack
+  # =============================================================================
+  
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: copilot-prometheus
+    ports:
+      - "9091:9090"  # Use 9091 to avoid conflict with howaiconnects-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alerting_rules.yml:/etc/prometheus/alerting_rules.yml
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=90d"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - "--web.enable-lifecycle"
+    restart: unless-stopped
+    networks:
+      - copilot-monitoring
+
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: copilot-grafana
+    ports:
+      - "3001:3000"  # Use 3001 to avoid conflict with existing Grafana at 3000/3100
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=copilot-admin-2024
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-piechart-panel
+      - GF_SERVER_ROOT_URL=http://localhost:3001
+      - GF_FEATURE_TOGGLES_ENABLE=publicDashboards
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - copilot-monitoring
+
+  # =============================================================================
+  # Metrics Exporter - Custom Python Service
+  # =============================================================================
+  
+  metrics-exporter:
+    build:
+      context: .
+      dockerfile: Dockerfile.metrics
+    container_name: copilot-metrics-exporter
+    ports:
+      - "8082:8080"  # Use 8082 to avoid conflict
+    volumes:
+      - ${HOME}/copilot-chat-backups:/data/backups:ro
+      - ./metrics_config.yml:/app/config.yml:ro
+    environment:
+      - BACKUP_PATH=/data/backups
+      - METRICS_PORT=8080
+      - LOG_LEVEL=INFO
+    restart: unless-stopped
+    networks:
+      - copilot-monitoring
+
+  # =============================================================================
+  # Vector Database for Semantic Search
+  # =============================================================================
+  
+  qdrant:
+    image: qdrant/qdrant:v1.7.4
+    container_name: copilot-qdrant
+    ports:
+      - "6337:6333"  # REST API (6337 to avoid conflict with howaiconnects-qdrant)
+      - "6338:6334"  # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__SERVICE__HTTP_PORT=6333
+    restart: unless-stopped
+    networks:
+      - copilot-monitoring
+
+  # =============================================================================
+  # Search API Service
+  # =============================================================================
+  
+  search-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.search
+    container_name: copilot-search-api
+    ports:
+      - "8083:8081"  # Use 8083 to avoid conflicts
+    volumes:
+      - ${HOME}/copilot-chat-backups:/data/backups:ro
+    environment:
+      - BACKUP_PATH=/data/backups
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - API_PORT=8081
+      - EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+    depends_on:
+      - qdrant
+    restart: unless-stopped
+    networks:
+      - copilot-monitoring
+
+  # =============================================================================
+  # Node Exporter for System Metrics
+  # =============================================================================
+  
+  node-exporter:
+    image: prom/node-exporter:v1.7.0
+    container_name: copilot-node-exporter
+    ports:
+      - "9101:9100"  # Use 9101 to avoid conflict
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--path.rootfs=/rootfs"
+      - "--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)"
+    restart: unless-stopped
+    networks:
+      - copilot-monitoring
+
+  # =============================================================================
+  # Redis for Caching & Session Management
+  # =============================================================================
+  
+  redis:
+    image: redis:7-alpine
+    container_name: copilot-redis
+    ports:
+      - "6390:6379"  # Use 6390 on host to avoid conflict with existing Redis instances
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    networks:
+      - copilot-monitoring
+
+networks:
+  copilot-monitoring:
+    driver: bridge
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  qdrant_data:
+  redis_data:

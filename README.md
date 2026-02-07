@@ -7,15 +7,18 @@ Works with **any repository** - local or remote. Keep your AI conversations orga
 ## Features
 
 - 🔄 **Automatic Backup**: Hourly/daily backups of all chat sessions
-- 📁 **Project Organization**: Chats organized by workspace/project  
+- 📁 **Project Organization**: Chats organized by workspace/project
 - 📅 **Daily Summaries**: Activity reports by date (Markdown)
 - 🤖 **AI-Friendly Export**: JSONL and Q&A pair formats for RAG/training
 - �� **Full-Text Search**: Query across all conversations
-- 📊 **Statistics**: Usage analytics and topic extraction
-- ☁️ **Airtable Sync**: Optional sync to Airtable for browsing/filtering
+- 📊 **Statistics**: Usage analytics and topic extraction- 💾 **Local Database**: SQLite database for portable metrics storage (tracked in git)
+- 🎯 **Monitoring Stack**: Complete observability with Prometheus + Grafana + Qdrant
+- 🔎 **Semantic Search**: Vector-based search across all chats- ☁️ **Airtable Sync**: Optional sync to Airtable for browsing/filtering
 - 🔀 **GitHub Sync**: Push backups to an orphan branch
 
 ## Quick Start
+
+> 🚀 **New!** Check out our [Integrated System Guide](INTEGRATION_SUMMARY.md) for a seamless setup with Azure AI, Qdrant, and Grafana.
 
 ```bash
 # Clone the repo
@@ -41,6 +44,7 @@ python3 backup-all-chats.py
 ## Installation
 
 ### Option 1: Clone to a central location
+
 ```bash
 # Recommended: Keep in a central tools directory
 git clone https://github.com/yourusername/copilot-chat-backup.git ~/tools/copilot-chat-backup
@@ -51,6 +55,7 @@ source ~/.bashrc
 ```
 
 ### Option 2: Install globally with symlinks
+
 ```bash
 git clone https://github.com/yourusername/copilot-chat-backup.git ~/tools/copilot-chat-backup
 sudo ln -s ~/tools/copilot-chat-backup/backup-copilot-chats.sh /usr/local/bin/copilot-backup
@@ -191,6 +196,7 @@ Complete export with all metadata for complex analysis.
 ## Integration Examples
 
 ### RAG System
+
 ```python
 import json
 
@@ -202,10 +208,11 @@ with open('~/copilot-chat-backups/ai-export/qa_pairs.jsonl') as f:
 ```
 
 ### Fine-tuning Data
+
 ```python
 with open('qa_pairs.jsonl') as f:
     training_data = [
-        {"instruction": json.loads(line)['question'], 
+        {"instruction": json.loads(line)['question'],
          "output": json.loads(line)['answer']}
         for line in f
     ]
@@ -214,6 +221,7 @@ with open('qa_pairs.jsonl') as f:
 ## VS Code Chat Locations
 
 Auto-discovered from:
+
 - **Linux**: `~/.config/Code/User/workspaceStorage/*/state.vscdb`
 - **macOS**: `~/Library/Application Support/Code/User/workspaceStorage/*/state.vscdb`
 - **Windows**: `%APPDATA%/Code/User/workspaceStorage/*/state.vscdb`
@@ -221,6 +229,7 @@ Auto-discovered from:
 ## Configuration
 
 Edit `config.json` to customize:
+
 - Tracked project paths
 - Backup retention period
 - Export format options

@@ -31,8 +31,27 @@ from collections import defaultdict
 import re
 
 # Configuration
-VSCODE_STORAGE_PATH = Path.home() / ".config/Code/User/workspaceStorage"
+# Try to find VS Code storage path
+POSSIBLE_STORAGE_PATHS = [
+    Path.home() / ".vscode-server/data/User/workspaceStorage",
+    Path.home() / ".config/Code/User/workspaceStorage",
+    Path.home() / "Library/Application Support/Code/User/workspaceStorage", # macOS
+    Path.home() / ".config/Code - OSS/User/workspaceStorage", # OSS
+]
+
+VSCODE_STORAGE_PATH = None
+for path in POSSIBLE_STORAGE_PATHS:
+    if path.exists():
+        VSCODE_STORAGE_PATH = path
+        break
+
+if not VSCODE_STORAGE_PATH:
+    VSCODE_STORAGE_PATH = Path.home() / ".config/Code/User/workspaceStorage"
+
 GLOBAL_STORAGE_PATH = Path.home() / ".config/Code/User/globalStorage/github.copilot-chat"
+if (Path.home() / ".vscode-server/data/User/globalStorage/github.copilot-chat").exists():
+    GLOBAL_STORAGE_PATH = Path.home() / ".vscode-server/data/User/globalStorage/github.copilot-chat"
+
 DEFAULT_BACKUP_PATH = Path.home() / "copilot-chat-backups"
 
 # Projects to track (add your workspace paths here)

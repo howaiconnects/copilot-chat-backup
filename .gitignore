@@ -6,7 +6,7 @@ airtable_config.json
 .env.local
 
 # Backup data (stored in ~/copilot-chat-backups, not in repo)
-*.db
+# Exception: copilot_backup.db is tracked for local metrics storage
 *.sqlite
 backups/
 raw/
@@ -40,3 +40,4 @@ Thumbs.db
 # Logs (local only)
 *.log
 logs/
+copilot_backup.db

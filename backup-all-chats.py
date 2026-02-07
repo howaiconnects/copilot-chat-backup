@@ -39,7 +39,24 @@ import urllib.parse
 # Configuration
 # ============================================================================
 
-VSCODE_STORAGE_PATH = Path.home() / ".config/Code/User/workspaceStorage"
+# Try to find VS Code storage path
+POSSIBLE_STORAGE_PATHS = [
+    Path.home() / ".vscode-server/data/User/workspaceStorage",
+    Path.home() / ".config/Code/User/workspaceStorage",
+    Path.home() / "Library/Application Support/Code/User/workspaceStorage", # macOS
+    Path.home() / ".config/Code - OSS/User/workspaceStorage", # OSS
+]
+
+VSCODE_STORAGE_PATH = None
+for path in POSSIBLE_STORAGE_PATHS:
+    if path.exists():
+        VSCODE_STORAGE_PATH = path
+        break
+
+if not VSCODE_STORAGE_PATH:
+    # Fallback to default even if not exists, to let the script handle the error
+    VSCODE_STORAGE_PATH = Path.home() / ".config/Code/User/workspaceStorage"
+
 BACKUP_ROOT = Path.home() / "copilot-chat-backups"
 
 # All known project directories (auto-discovered + manual)

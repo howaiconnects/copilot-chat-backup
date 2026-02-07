@@ -1,0 +1,66 @@
+# Metrics Exporter Configuration
+# ================================
+
+server:
+  port: 8080
+  host: "0.0.0.0"
+
+backup:
+  path: "/data/backups"
+  scan_interval_seconds: 60
+
+metrics:
+  # Session-level metrics to collect
+  sessions:
+    enabled: true
+    labels:
+      - workspace
+      - project
+      - date
+  
+  # Message-level metrics
+  messages:
+    enabled: true
+    labels:
+      - role
+      - model
+      - workspace
+  
+  # File-level metrics
+  files:
+    enabled: true
+    labels:
+      - extension
+      - workspace
+
+  # Time-based metrics
+  temporal:
+    enabled: true
+    buckets:
+      - hourly
+      - daily
+      - weekly
+      - monthly
+
+# Custom dimensions for filtering
+dimensions:
+  projects:
+    - name: "aiconnects-hub"
+      patterns: ["aiconnects-hub", "hub"]
+    - name: "aiconnects-codex"
+      patterns: ["aiconnects-codex", "codex"]
+    - name: "copilot-chat-backup"
+      patterns: ["copilot-chat-backup"]
+
+# Export settings
+export:
+  prometheus:
+    enabled: true
+    path: "/metrics"
+  json:
+    enabled: true
+    path: "/api/metrics"
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
